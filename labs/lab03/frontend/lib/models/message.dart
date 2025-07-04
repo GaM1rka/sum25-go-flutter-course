@@ -1,46 +1,37 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'message.g.dart';
+
+@JsonSerializable()
 class Message {
   final int id;
   final String username;
   final String content;
+
+  @JsonKey(name: 'timestamp')
   final DateTime timestamp;
 
-  Message(
-      {required this.id,
-      required this.username,
-      required this.content,
-      required this.timestamp});
+  const Message({
+    required this.id,
+    required this.username,
+    required this.content,
+    required this.timestamp,
+  });
 
-  factory Message.fromJson(Map<String, dynamic> json) {
-    return Message(
-      id: json["id"] as int,
-      username: json['username'] as String,
-      content: json['content'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-    );
-  }
+  factory Message.fromJson(Map<String, dynamic> json) =>
+      _$MessageFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "username": username,
-      "content": content,
-      "timestamp": timestamp.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$MessageToJson(this);
 }
 
+@JsonSerializable()
 class CreateMessageRequest {
   final String username;
   final String content;
 
-  CreateMessageRequest({required this.username, required this.content});
+  const CreateMessageRequest({required this.username, required this.content});
 
-  Map<String, dynamic> toJson() {
-    return {
-      "username": username,
-      "content": content,
-    };
-  }
+  Map<String, dynamic> toJson() => _$CreateMessageRequestToJson(this);
 
   String? validate() {
     if (username == "") {
@@ -53,16 +44,13 @@ class CreateMessageRequest {
   }
 }
 
+@JsonSerializable()
 class UpdateMessageRequest {
   final String content;
 
-  UpdateMessageRequest({required this.content});
+  const UpdateMessageRequest({required this.content});
 
-  Map<String, dynamic> toJson() {
-    return {
-      "content": content,
-    };
-  }
+  Map<String, dynamic> toJson() => _$UpdateMessageRequestToJson(this);
 
   String? validate() {
     if (content == "") {
@@ -72,23 +60,21 @@ class UpdateMessageRequest {
   }
 }
 
+@JsonSerializable()
 class HTTPStatusResponse {
+  @JsonKey(name: 'status_code')
   final int statusCode;
+  @JsonKey(name: 'image_url')
   final String imageUrl;
   final String description;
 
-  HTTPStatusResponse(
+  const HTTPStatusResponse(
       {required this.statusCode,
       required this.imageUrl,
       required this.description});
 
-  factory HTTPStatusResponse.fromJson(Map<String, dynamic> json) {
-    return HTTPStatusResponse(
-      statusCode: json['status_code'] as int,
-      imageUrl: json['image_url'] as String,
-      description: json['description'] as String,
-    );
-  }
+  factory HTTPStatusResponse.fromJson(Map<String, dynamic> json) =>
+      _$HTTPStatusResponseFromJson(json);
 }
 
 class ApiResponse<T> {
@@ -96,13 +82,15 @@ class ApiResponse<T> {
   final T? data;
   final String? error;
 
-  ApiResponse({required this.success, this.data, this.error});
+  const ApiResponse({required this.success, this.data, this.error});
 
-  factory ApiResponse.fromJsonT(Map<String, dynamic> json) {
+  factory ApiResponse.fromJson(
+      Map<String, dynamic> json, T Function(Map<String, dynamic>)? fromJsonT) {
     return ApiResponse(
-      success: json['success'] as bool,
-      data: json['data'],
-      error: json['error'],
-    );
+        success: json['success'] as bool,
+        data: json['data'] != null && fromJsonT != null
+            ? fromJsonT(json['data'] as Map<String, dynamic>)
+            : null,
+        error: json['error'] as String?);
   }
 }

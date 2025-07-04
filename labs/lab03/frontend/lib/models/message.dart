@@ -7,11 +7,9 @@ class Message {
   final int id;
   final String username;
   final String content;
-
-  @JsonKey(name: 'timestamp')
   final DateTime timestamp;
 
-  const Message({
+  Message({
     required this.id,
     required this.username,
     required this.content,
@@ -20,7 +18,6 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) =>
       _$MessageFromJson(json);
-
   Map<String, dynamic> toJson() => _$MessageToJson(this);
 }
 
@@ -29,17 +26,16 @@ class CreateMessageRequest {
   final String username;
   final String content;
 
-  const CreateMessageRequest({required this.username, required this.content});
+  CreateMessageRequest({
+    required this.username,
+    required this.content,
+  });
 
   Map<String, dynamic> toJson() => _$CreateMessageRequestToJson(this);
 
   String? validate() {
-    if (username == "") {
-      return "Username is required";
-    }
-    if (content == "") {
-      return "Content is required";
-    }
+    if (username.isEmpty) return 'Username is required';
+    if (content.isEmpty) return 'Content is mandatory';
     return null;
   }
 }
@@ -48,14 +44,12 @@ class CreateMessageRequest {
 class UpdateMessageRequest {
   final String content;
 
-  const UpdateMessageRequest({required this.content});
+  UpdateMessageRequest({required this.content});
 
   Map<String, dynamic> toJson() => _$UpdateMessageRequestToJson(this);
 
   String? validate() {
-    if (content == "") {
-      return "Content is required";
-    }
+    if (content.isEmpty) return 'Content is mandatory';
     return null;
   }
 }
@@ -68,29 +62,32 @@ class HTTPStatusResponse {
   final String imageUrl;
   final String description;
 
-  const HTTPStatusResponse(
-      {required this.statusCode,
-      required this.imageUrl,
-      required this.description});
+  HTTPStatusResponse({
+    required this.statusCode,
+    required this.imageUrl,
+    required this.description,
+  });
 
   factory HTTPStatusResponse.fromJson(Map<String, dynamic> json) =>
       _$HTTPStatusResponseFromJson(json);
 }
 
+@JsonSerializable(genericArgumentFactories: true)
 class ApiResponse<T> {
   final bool success;
   final T? data;
   final String? error;
 
-  const ApiResponse({required this.success, this.data, this.error});
+  ApiResponse({required this.success, this.data, this.error});
 
   factory ApiResponse.fromJson(
-      Map<String, dynamic> json, T Function(Map<String, dynamic>)? fromJsonT) {
-    return ApiResponse(
-        success: json['success'] as bool,
-        data: json['data'] != null && fromJsonT != null
-            ? fromJsonT(json['data'] as Map<String, dynamic>)
-            : null,
-        error: json['error'] as String?);
+    Map<String, dynamic> json,
+    T Function(Object? json) fromJsonT,
+  ) {
+    return ApiResponse<T>(
+      success: json['success'] as bool,
+      data: json['data'] != null ? fromJsonT(json['data']) : null,
+      error: json['error'] as String?,
+    );
   }
 }

@@ -55,7 +55,39 @@ HTTPStatusResponse _$HTTPStatusResponseFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$HTTPStatusResponseToJson(HTTPStatusResponse instance) =>
     <String, dynamic>{
-      'status_Code': instance.statusCode,
-      'image_Url': instance.imageUrl,
+      'status_code': instance.statusCode,
+      'image_url': instance.imageUrl,
       'description': instance.description,
     };
+
+ApiResponse<T> _$ApiResponseFromJson<T>(
+  Map<String, dynamic> json,
+  T Function(Object? json) fromJsonT,
+) =>
+    ApiResponse<T>(
+      success: json['success'] as bool,
+      data: _$nullableGenericFromJson(json['data'], fromJsonT),
+      error: json['error'] as String?,
+    );
+
+Map<String, dynamic> _$ApiResponseToJson<T>(
+  ApiResponse<T> instance,
+  Object? Function(T value) toJsonT,
+) =>
+    <String, dynamic>{
+      'success': instance.success,
+      'data': _$nullableGenericToJson(instance.data, toJsonT),
+      'error': instance.error,
+    };
+
+T? _$nullableGenericFromJson<T>(
+  Object? input,
+  T Function(Object? json) fromJson,
+) =>
+    input == null ? null : fromJson(input);
+
+Object? _$nullableGenericToJson<T>(
+  T? input,
+  Object? Function(T value) toJson,
+) =>
+    input == null ? null : toJson(input);
